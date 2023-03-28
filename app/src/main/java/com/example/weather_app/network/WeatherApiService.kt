@@ -3,6 +3,7 @@ package com.example.weather_app.network
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Query
 
 private const val BASE_URL = "https://api.open-meteo.com"
 
@@ -18,6 +19,9 @@ object WeatherApi {
 }
 
 interface WeatherApiService {
-    @GET("v1/forecast?latitude=52.52&longitude=13.41&current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m")
-    suspend fun getWeatherCity(): String
+    @GET("v1/forecast?current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m")
+    suspend fun getWeatherCity(
+        @Query("latitude") lat: Double,
+        @Query("longitude") long: Double
+    ): String
 }

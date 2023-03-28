@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.weather_app.network.WeatherApi
 import kotlinx.coroutines.launch
@@ -15,19 +16,24 @@ sealed interface WeatherUiState {
     object Loading: WeatherUiState
 }
 
-class WeatherViewModel: ViewModel() {
+class WeatherViewModel(
+    lat: Double,
+    long: Double
+): ViewModel() {
     var weatherUiState: WeatherUiState by mutableStateOf(WeatherUiState.Loading)
-        private set
 
     init {
-        getWeatherCity()
+        getWeatherCity(lat, long)
     }
 
-    private fun getWeatherCity() {
+    fun getWeatherCity(
+        lat: Double,
+        long: Double
+    ) {
         viewModelScope.launch {
             weatherUiState = try {
-                val listResult = WeatherApi.retrofitService.getWeatherCity()
-                WeatherUiState.Success("Success: $listResult")
+                val result = WeatherApi.retrofitService.getWeatherCity(lat, long)
+                WeatherUiState.Success("Success: $result")
             } catch(e: IOException) {
                 WeatherUiState.Error("IO error: ${e.message}")
             } catch(e: Exception) {
@@ -37,3 +43,12 @@ class WeatherViewModel: ViewModel() {
     }
 }
 
+class WeatherViewModelFactory(private val lat: Double, private val long: Double): ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(WeatherViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return WeatherViewModel(lat, long) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}

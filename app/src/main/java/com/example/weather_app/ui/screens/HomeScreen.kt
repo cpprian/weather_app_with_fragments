@@ -34,7 +34,6 @@ fun ErrorScreen(
         contentAlignment = Alignment.Center,
         modifier = modifier.fillMaxSize()
     ) {
-//        Text(stringResource(id = R.string.error_message))
         Text(text = weather)
     }
 }
