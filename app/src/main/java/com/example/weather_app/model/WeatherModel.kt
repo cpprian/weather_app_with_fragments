@@ -5,8 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "weather_table")
 data class WeatherModel(
-    val city: String,
-    val timezone: String,
+    val cityInfo: CityModel,
     val latitude: Double,
     val longitude: Double,
     val currentWeather: CurrentWeatherModel,
@@ -14,6 +13,13 @@ data class WeatherModel(
     val hourly_units: String,
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0
+)
+
+data class CityModel (
+    val city: String,
+    val timezone: String,
+    val latitude: Double,
+    val longitude: Double
 )
 
 data class CurrentWeatherModel(
