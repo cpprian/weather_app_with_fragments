@@ -6,11 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.weather_app.ui.theme.Typography
+import com.example.weather_app.ui.WeatherApp
 import com.example.weather_app.ui.theme.Weather_appTheme
 
 class MainActivity : ComponentActivity() {
@@ -23,25 +20,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    InitWeatherApp()
+                    WeatherApp()
                 }
             }
         }
-    }
-}
-
-@Composable
-fun InitWeatherApp(modifier: Modifier = Modifier) {
-    Text(
-        text = "Weather app",
-        style = Typography.body1
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    Weather_appTheme {
-        InitWeatherApp()
     }
 }

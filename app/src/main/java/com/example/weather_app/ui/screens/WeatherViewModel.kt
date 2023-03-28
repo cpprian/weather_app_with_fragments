@@ -7,10 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.weather_app.network.WeatherApi
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 sealed interface WeatherUiState {
-    data class Success(val weather: List<String>): WeatherUiState
-    object Error: WeatherUiState
+    data class Success(val weather: String): WeatherUiState
+    data class Error(val error: String): WeatherUiState
     object Loading: WeatherUiState
 }
 
@@ -24,7 +25,14 @@ class WeatherViewModel: ViewModel() {
 
     fun getWeatherCity() {
         viewModelScope.launch {
-            val listResult = WeatherApi.retrofitService.getWeatherCity()
+            weatherUiState = try {
+                val listResult = WeatherApi.retrofitService.getWeatherCity()
+                WeatherUiState.Success("Success: $listResult")
+            } catch(e: IOException) {
+                WeatherUiState.Error("IO error: ${e.message}")
+            } catch(e: Exception) {
+                WeatherUiState.Error("Unknown error: ${e.message}")
+            }
         }
     }
 }
