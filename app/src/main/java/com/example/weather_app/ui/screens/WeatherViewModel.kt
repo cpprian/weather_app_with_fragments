@@ -23,11 +23,14 @@ class WeatherViewModel: ViewModel() {
         getWeatherCity()
     }
 
-    private fun getWeatherCity() {
+    private fun getWeatherCity(
+        lat: Double = 48.8534,
+        long: Double = 2.3488
+    ) {
         viewModelScope.launch {
             weatherUiState = try {
-                val listResult = WeatherApi.retrofitService.getWeatherCity()
-                WeatherUiState.Success("Success: $listResult")
+                val result = WeatherApi.retrofitService.getWeatherCity(lat, long)
+                WeatherUiState.Success("Success: $result")
             } catch(e: IOException) {
                 WeatherUiState.Error("IO error: ${e.message}")
             } catch(e: Exception) {
