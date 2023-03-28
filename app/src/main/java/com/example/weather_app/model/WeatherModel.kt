@@ -1,27 +1,27 @@
 package com.example.weather_app.model
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "weather_table")
 data class WeatherModel(
-    val cityInfo: CityModel,
+    @Embedded val cityInfo: CityModel,
     val latitude: Double,
     val longitude: Double,
-    val currentWeather: CurrentWeatherModel,
-    val hourly: Hourly,
-    val hourly_units: String,
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0
+    @Embedded val currentWeather: CurrentWeatherModel,
+    @Embedded val hourly: Hourly,
 )
 
+@Entity(tableName = "city_table")
 data class CityModel (
-    val city: String,
+    @PrimaryKey val city: String,
     val timezone: String,
     val latitude: Double,
     val longitude: Double
 )
 
+@Entity(tableName = "current_weather_table")
 data class CurrentWeatherModel(
     val time: String,
     val temperature: Double,
@@ -30,7 +30,8 @@ data class CurrentWeatherModel(
     val windDirection: Double
 )
 
+@Entity(tableName = "hourly_table")
 data class Hourly(
     val time: List<String>,
-    val temperature_2m: List<Double>,
+    val temperature_2m: List<Double>
 )
