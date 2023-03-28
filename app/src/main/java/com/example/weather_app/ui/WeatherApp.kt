@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.weather_app.R
 import com.example.weather_app.ui.screens.*
+import com.example.weather_app.util.returnLatLong
 import org.json.JSONObject
 
 @Composable
@@ -59,7 +60,7 @@ fun WeatherApp(modifier: Modifier = Modifier) {
 
             Column {
                 Text(text = "Your city: $city")
-                
+
                 when (val cityUiState = cityViewModel.cityUiState) {
                     is CityUiState.Loading -> Text(text = "Loading...")
                     is CityUiState.Error -> Text(text = "Error: ${cityUiState.error}")
@@ -85,16 +86,3 @@ inline fun <reified T : ViewModel> rememberViewModel(
     val factory by remember { mutableStateOf(viewModelFactory) }
     return remember { factory() }
 }
-
-fun returnLatLong(data: String): Pair<String, String> {
-    return try {
-        val jsonObject = JSONObject(data)
-        val latitude = jsonObject.getJSONArray("results").getJSONObject(0).getString("latitude")
-        val longitude = jsonObject.getJSONArray("results").getJSONObject(0).getString("longitude")
-        Pair(latitude, longitude)
-    } catch (e: Exception) {
-        Pair("0", "0")
-    }
-}
-
-
