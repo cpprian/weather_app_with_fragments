@@ -23,7 +23,7 @@ class WeatherViewModel: ViewModel() {
         getWeatherCity()
     }
 
-    fun getWeatherCity() {
+    private fun getWeatherCity() {
         viewModelScope.launch {
             weatherUiState = try {
                 val listResult = WeatherApi.retrofitService.getWeatherCity()
