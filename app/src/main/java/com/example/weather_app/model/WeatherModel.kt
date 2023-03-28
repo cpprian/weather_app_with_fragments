@@ -13,7 +13,6 @@ data class WeatherModel(
     @Embedded val hourly: Hourly,
 )
 
-@Entity(tableName = "city_table")
 data class CityModel (
     @PrimaryKey val city: String,
     val timezone: String,
@@ -21,7 +20,6 @@ data class CityModel (
     val longitude: Double
 )
 
-@Entity(tableName = "current_weather_table")
 data class CurrentWeatherModel(
     val time: String,
     val temperature: Double,
@@ -30,7 +28,6 @@ data class CurrentWeatherModel(
     val windDirection: Double
 )
 
-@Entity(tableName = "hourly_table")
 data class Hourly(
     val time: List<String>,
     val temperature_2m: List<Double>

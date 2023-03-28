@@ -19,6 +19,6 @@ interface WeatherDao {
     @Query("SELECT * FROM weather_table WHERE cityInfo.city = :city")
     suspend fun getFavoriteCity(city: String): WeatherModel
 
-    @Query("SELECT * FROM weather_table")
+    @Query("SELECT * FROM weather_table BY cityInfo.city ASC")
     suspend fun getAllFavoriteCities(): List<WeatherModel>
 }
