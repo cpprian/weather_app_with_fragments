@@ -12,11 +12,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.weather_app.R
 import com.example.weather_app.ui.screens.*
 import com.example.weather_app.util.returnLatLong
-import org.json.JSONObject
 
 @Composable
 fun WeatherApp(modifier: Modifier = Modifier) {
     var city by remember { mutableStateOf("") }
+    var latitude by remember { mutableStateOf(0.0) }
+    var longitude by remember { mutableStateOf(0.0) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -53,9 +54,18 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                 CityViewModelFactory(city).create(CityViewModel::class.java)
             }
 
+            val weatherViewModel: WeatherViewModel = rememberViewModel {
+                WeatherViewModelFactory(latitude, longitude).create(WeatherViewModel::class.java)
+            }
+
             LaunchedEffect(city) {
                 cityViewModel.cityUiState = CityUiState.Success(city)
                 cityViewModel.getCity(city)
+            }
+
+            LaunchedEffect(latitude, longitude) {
+                weatherViewModel.weatherUiState = WeatherUiState.Success("Loading...")
+                weatherViewModel.getWeatherCity(latitude, longitude)
             }
 
             Column {
@@ -67,12 +77,13 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                     is CityUiState.Success -> {
                         Text(text = "Your city from CityViewModel: ${cityUiState.city}")
                         val result = returnLatLong(cityUiState.city)
-                        Text(text = "Your latitude: ${result.first}")
-                        Text(text = "Your longitude: ${result.second}")
+                        latitude = result.first.toDouble()
+                        longitude = result.second.toDouble()
+                        Text(text = "Your latitude: $latitude")
+                        Text(text = "Your longitude: $longitude")
                     }
                 }
 
-                val weatherViewModel: WeatherViewModel = viewModel()
                 HomeScreen(weatherUiState = weatherViewModel.weatherUiState)
             }
         }
