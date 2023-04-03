@@ -1,4 +1,4 @@
-package com.example.weather_app.model
+package com.example.weather_app.data
 
 import androidx.room.*
 import com.example.weather_app.util.DoubleListConverter

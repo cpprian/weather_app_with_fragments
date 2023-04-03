@@ -1,4 +1,4 @@
-package com.example.weather_app.model
+package com.example.weather_app.data
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface WeatherDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFavoriteCity(cityWithWeather: WeatherModel)
+    suspend fun insertWeather(cityWithWeather: WeatherModel)
 
     @Query("UPDATE weather_table " +
             "SET currentTime = :currentTime, " +
@@ -17,7 +17,7 @@ interface WeatherDao {
             "hourlyTime = :hourlyTime, " +
             "temperature_2m = :temperature_2m " +
             "WHERE city = :city")
-    suspend fun updateFavoriteCity(
+    suspend fun updateWeather(
         city: String,
         currentTime: String,
         temperature: Double,
@@ -29,11 +29,11 @@ interface WeatherDao {
     )
 
     @Query("DELETE FROM weather_table WHERE city = :city")
-    suspend fun deleteFavoriteCity(city: String)
+    suspend fun deleteWeather(city: String)
 
     @Query("SELECT * FROM weather_table WHERE city = :city")
-    fun getFavoriteCity(city: String): Flow<WeatherModel>
+    fun getWeather(city: String): Flow<WeatherModel>
 
     @Query("SELECT * FROM weather_table ORDER BY city ASC")
-    fun getAllFavoriteCities(): Flow<List<WeatherModel>>
+    fun getAllWeather(): Flow<List<WeatherModel>>
 }

@@ -1,4 +1,4 @@
-package com.example.weather_app.model
+package com.example.weather_app.data
 
 import android.content.Context
 import androidx.room.*
