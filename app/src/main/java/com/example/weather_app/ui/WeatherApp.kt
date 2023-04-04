@@ -11,15 +11,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.example.weather_app.R
 import com.example.weather_app.data.WeatherDB
+import com.example.weather_app.ui.fragments.WeatherFragment
 import com.example.weather_app.ui.screens.*
 import com.example.weather_app.util.extractWeatherData
 import com.example.weather_app.util.returnLatLong
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -40,7 +42,7 @@ fun WeatherApp(modifier: Modifier = Modifier) {
     var longitude by remember { mutableStateOf(0.0) }
     var errorApi by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
-    var weatherUnit by remember { mutableStateOf("celsius") }
+    var weatherUnit by remember { mutableStateOf("") }
 
     val cityViewModel: CityViewModel = rememberViewModel {
         CityViewModelFactory(city).create(CityViewModel::class.java)
@@ -76,19 +78,23 @@ fun WeatherApp(modifier: Modifier = Modifier) {
 
         LaunchedEffect(weatherUnit) {
             if (weatherUnit == "celsius") {
-                favorites.forEach { option ->
-                    dao.updateWeatherUnitsCelsius(weatherUnit, option.city)
+                launch {
+                    favorites.forEach { option ->
+                        dao.updateWeatherUnitsCelsius(weatherUnit, option.city)
+                    }
                 }
-            } else {
-                favorites.forEach { option ->
-                    dao.updateWeatherUnitsFahrenheit(weatherUnit, option.city)
+            } else if (weatherUnit == "fahrenheit") {
+                launch {
+                    favorites.forEach { option ->
+                        dao.updateWeatherUnitsFahrenheit(weatherUnit, option.city)
+                    }
                 }
             }
         }
 
         IconButton(onClick = {
             expanded = false
-            weatherUnit = if (weatherUnit == "celsius") "celsius" else "fahrenheit"
+            weatherUnit = if (weatherUnit == "celsius" || weatherUnit.isEmpty()) "celsius" else "fahrenheit"
         }) {
             Row {
                 Icon(
@@ -169,7 +175,7 @@ fun WeatherApp(modifier: Modifier = Modifier) {
             }
 
             LaunchedEffect(latitude, longitude, weatherUnit) {
-                weatherViewModel.weatherUiState = WeatherUiState.Success("Loading...")
+                weatherViewModel.weatherUiState = WeatherUiState.Success("")
                 weatherViewModel.getWeatherCity(latitude, longitude, weatherUnit)
             }
 
@@ -205,8 +211,8 @@ fun WeatherApp(modifier: Modifier = Modifier) {
 
                                 val weather = dao.getWeather(city).firstOrNull()
                                 if (weather == null) {
-                                    if (favorites.size >= 10) {
-                                        Toast.makeText(context, "You can't add more than 10 cities", Toast.LENGTH_SHORT).show()
+                                    if (favorites.size >= 5) {
+                                        Toast.makeText(context, "You can only add 5 favorites", Toast.LENGTH_SHORT).show()
                                         return@LaunchedEffect
                                     }
                                     dao.insertWeather(weatherModel)
@@ -277,14 +283,18 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                     }
                 }
 
-
+                when (val weatherUiState = weatherViewModel.weatherUiState) {
+                    is WeatherUiState.Loading -> { null }
+                    is WeatherUiState.Error -> { null }
+                    is WeatherUiState.Success -> { extractWeatherData(city, weatherUiState.weather) }
+                }?.let { it1 ->
+                    WeatherFragment(city = city, weatherDB = dao,
+                        currentWeatherModel = it1
+                    )
+                }
             }
         }
     }
-}
-
-private suspend fun <T> Flow<T>.isEmpty(): Boolean {
-    return this.firstOrNull() == null
 }
 
 @Composable
