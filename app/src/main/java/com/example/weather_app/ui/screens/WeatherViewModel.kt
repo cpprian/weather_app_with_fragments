@@ -33,7 +33,7 @@ class WeatherViewModel(
         viewModelScope.launch {
             weatherUiState = try {
                 val result = WeatherApi.retrofitService.getWeatherCity(lat, long)
-                WeatherUiState.Success("Success: $result")
+                WeatherUiState.Success(result)
             } catch(e: IOException) {
                 WeatherUiState.Error("IO error: ${e.message}")
             } catch(e: Exception) {

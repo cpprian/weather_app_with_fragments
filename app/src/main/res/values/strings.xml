@@ -3,4 +3,7 @@
     <string name="error_message">Error while fetching data</string>
     <string name="loading_message">Loading…</string>
     <string name="city">Insert city name</string>
+    <string name="favorite">Favorite</string>
+    <string name="not_favorite">Not favorite</string>
+    <string name="search">Search</string>
 </resources>
