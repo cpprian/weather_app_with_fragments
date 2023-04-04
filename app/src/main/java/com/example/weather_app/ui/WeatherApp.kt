@@ -1,6 +1,8 @@
 package com.example.weather_app.ui
 
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,14 +16,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.weather_app.R
 import com.example.weather_app.data.WeatherDB
 import com.example.weather_app.ui.screens.*
 import com.example.weather_app.util.extractWeatherData
 import com.example.weather_app.util.returnLatLong
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WeatherApp(modifier: Modifier = Modifier) {
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -35,7 +42,7 @@ fun WeatherApp(modifier: Modifier = Modifier) {
     var city by remember { mutableStateOf("") }
     var latitude by remember { mutableStateOf(0.0) }
     var longitude by remember { mutableStateOf(0.0) }
-    var weatherUiState by remember { mutableStateOf(WeatherUiState.Loading) }
+    var errorApi by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -99,6 +106,8 @@ fun WeatherApp(modifier: Modifier = Modifier) {
 
             Column {
                 LaunchedEffect(city) {
+                    if (errorApi) return@LaunchedEffect
+
                     setFavorite(false)
                     for (favorite in favorites) {
                         if (favorite.city == city) {
@@ -108,16 +117,47 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                 }
 
                 LaunchedEffect(isFavorite) {
+                    if (errorApi) return@LaunchedEffect
+
                     if (isFavorite) {
                         when(val h = weatherViewModel.weatherUiState) {
-                            is WeatherUiState.Loading -> {}
-                            is WeatherUiState.Error -> {}
+                            is WeatherUiState.Loading -> {
+                                errorApi = false
+                            }
+                            is WeatherUiState.Error -> {
+                                errorApi = true
+                            }
                             is WeatherUiState.Success -> {
+                                errorApi = false
                                 val weatherModel = extractWeatherData(city, h.weather)
                                 if (weatherModel.city != city) {
                                     return@LaunchedEffect
                                 }
-                                dao.insertWeather(weatherModel)
+
+                                val weather = dao.getWeather(city).firstOrNull()
+                                if (weather == null) {
+                                    dao.insertWeather(weatherModel)
+                                } else {
+                                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
+                                    val currentTime = LocalDateTime.parse(weatherModel.currentTime, formatter)
+                                    val lastUpdateTime = LocalDateTime.parse(weather.currentTime, formatter)
+
+                                    val diffInMinutes = ChronoUnit.MINUTES.between(lastUpdateTime, currentTime)
+                                    if (diffInMinutes < 5) {
+                                        return@LaunchedEffect
+                                    }
+
+                                    dao.updateWeather(
+                                        weatherModel.city,
+                                        weatherModel.currentTime,
+                                        weatherModel.temperature,
+                                        weatherModel.weatherCode,
+                                        weatherModel.windSpeed,
+                                        weatherModel.windDirection,
+                                        weatherModel.hourlyTime,
+                                        weatherModel.temperature_2m
+                                    )
+                                }
                             }
                         }
                     } else {
@@ -126,6 +166,8 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                 }
 
                 IconButton(onClick = {
+                    if (errorApi) return@IconButton
+
                     setFavorite(!isFavorite)
 
                     Toast.makeText(
@@ -142,31 +184,33 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                 }
 
                 when (val cityUiState = cityViewModel.cityUiState) {
-                    is CityUiState.Loading -> Text(text = "Loading...")
-                    is CityUiState.Error -> Text(text = "Error: ${cityUiState.error}")
+                    is CityUiState.Loading -> {
+                        errorApi = false
+                        /* TODO: Handle loading */
+                    }
+                    is CityUiState.Error -> {
+                        errorApi = true
+                        Toast.makeText(
+                            context,
+                            "Unable to find city: " + cityUiState.error,
+                            Toast.LENGTH_SHORT).show()
+                    }
                     is CityUiState.Success -> {
-//                        Text(text = "Your city from CityViewModel: ${cityUiState.city}")
+                        errorApi = false
                         val result = returnLatLong(cityUiState.city)
                         latitude = result.first.toDouble()
                         longitude = result.second.toDouble()
-//                        Text(text = "Your latitude: $latitude")
-//                        Text(text = "Your longitude: $longitude")
                     }
                 }
 
-                Text(text = "len fav: " + favorites.size.toString())
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(it)
-                ) {
-                    items(favorites) { favorite ->
-                        Text(text = "Fav city: " + favorite.city)
-                    }
-                }
+
             }
         }
     }
+}
+
+private suspend fun <T> Flow<T>.isEmpty(): Boolean {
+    return this.firstOrNull() == null
 }
 
 @Composable
