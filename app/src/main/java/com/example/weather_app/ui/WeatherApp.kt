@@ -3,17 +3,19 @@ package com.example.weather_app.ui
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -32,7 +34,7 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun WeatherApp(modifier: Modifier = Modifier) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    var (isFavorite, setFavorite) = remember { mutableStateOf(false) }
+    val (isFavorite, setFavorite) = remember { mutableStateOf(false) }
 
     val database = WeatherDB.getDatabase(context)
     val dao = database.weatherDao()
@@ -43,6 +45,22 @@ fun WeatherApp(modifier: Modifier = Modifier) {
     var latitude by remember { mutableStateOf(0.0) }
     var longitude by remember { mutableStateOf(0.0) }
     var errorApi by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+        modifier = Modifier.padding(10.dp).fillMaxHeight().width(150.dp)
+    ) {
+        favorites.forEach { option ->
+            DropdownMenuItem(onClick = {
+                expanded = false
+                city = option.city
+            }) {
+                Text(text = option.city)
+            }
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -57,10 +75,22 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         var inputText by remember { mutableStateOf("") }
+
+                        IconButton(
+                            onClick = { expanded = true },
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = stringResource(id = R.string.menu)
+                            )
+                        }
+
                         OutlinedTextField(
                             value = inputText,
                             onValueChange = { inputText = it },
                             label = { Text(text = stringResource(id = R.string.city)) },
+                            modifier = Modifier.fillMaxWidth(0.75f)
                         )
 
                         IconButton(
