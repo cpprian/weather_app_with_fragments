@@ -24,6 +24,7 @@ fun extractWeatherData(city: String, data: String): WeatherModel {
         val longitude = jsonObject.getDouble("longitude")
         val currentTime = jsonObject.getJSONObject("current_weather").getString("time")
         val temperature = jsonObject.getJSONObject("current_weather").getDouble("temperature")
+        val temperatureUnit = jsonObject.getJSONObject("hourly_units").getString("temperature_2m")
         val weatherCode = jsonObject.getJSONObject("current_weather").getInt("weathercode")
         val windSpeed = jsonObject.getJSONObject("current_weather").getDouble("windspeed")
         val windDirection = jsonObject.getJSONObject("current_weather").getDouble("winddirection")
@@ -40,11 +41,12 @@ fun extractWeatherData(city: String, data: String): WeatherModel {
             longitude = longitude,
             currentTime = currentTime,
             temperature = temperature,
+            temperatureUnit = temperatureUnit,
             weatherCode = weatherCode,
             windSpeed = windSpeed,
             windDirection = windDirection,
-            hourlyTime = hourlyTime,
-            temperature_2m = temperature_2m
+            hourlyTime = fromListToString(hourlyTime),
+            temperature_2m = fromListDoubleToString(temperature_2m)
         )
     } catch (e: Exception) {
         Log.d("extractWeatherData", data + "\n" +  e.toString())
@@ -55,11 +57,12 @@ fun extractWeatherData(city: String, data: String): WeatherModel {
             longitude = 0.0,
             currentTime = "0",
             temperature = 0.0,
+            temperatureUnit = "celsius",
             weatherCode = 0,
             windSpeed = 0.0,
             windDirection = 0.0,
-            hourlyTime = listOf("0"),
-            temperature_2m = listOf(0.0)
+            hourlyTime = "0",
+            temperature_2m = "0"
         )
     }
 }

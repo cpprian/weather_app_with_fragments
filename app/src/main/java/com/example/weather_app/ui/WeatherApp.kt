@@ -3,19 +3,13 @@ package com.example.weather_app.ui
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.expandHorizontally
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -46,12 +40,65 @@ fun WeatherApp(modifier: Modifier = Modifier) {
     var longitude by remember { mutableStateOf(0.0) }
     var errorApi by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
+    var weatherUnit by remember { mutableStateOf("celsius") }
+
+    val cityViewModel: CityViewModel = rememberViewModel {
+        CityViewModelFactory(city).create(CityViewModel::class.java)
+    }
+
+    val weatherViewModel: WeatherViewModel = rememberViewModel {
+        WeatherViewModelFactory(latitude, longitude, weatherUnit).create(WeatherViewModel::class.java)
+    }
 
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { expanded = false },
-        modifier = Modifier.padding(10.dp).fillMaxHeight().width(150.dp)
+        modifier = Modifier
+            .padding(10.dp)
+            .fillMaxHeight()
+            .width(150.dp)
     ) {
+        IconButton(onClick = {
+            expanded = false
+
+            val tempCity = city
+            city = ""
+            city = tempCity
+        }) {
+            Row {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = stringResource(id = R.string.sync)
+                )
+                Text(text = stringResource(id = R.string.sync))
+            }
+        }
+
+        LaunchedEffect(weatherUnit) {
+            if (weatherUnit == "celsius") {
+                favorites.forEach { option ->
+                    dao.updateWeatherUnitsCelsius(weatherUnit, option.city)
+                }
+            } else {
+                favorites.forEach { option ->
+                    dao.updateWeatherUnitsFahrenheit(weatherUnit, option.city)
+                }
+            }
+        }
+
+        IconButton(onClick = {
+            expanded = false
+            weatherUnit = if (weatherUnit == "celsius") "celsius" else "fahrenheit"
+        }) {
+            Row {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = stringResource(id = R.string.swap_temperature_units)
+                )
+                Text(text = stringResource(id = R.string.swap_temperature_units))
+            }
+        }
+
         favorites.forEach { option ->
             DropdownMenuItem(onClick = {
                 expanded = false
@@ -116,22 +163,14 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                 .padding(it),
             color = MaterialTheme.colors.background
         ) {
-            val cityViewModel: CityViewModel = rememberViewModel {
-                CityViewModelFactory(city).create(CityViewModel::class.java)
-            }
-
-            val weatherViewModel: WeatherViewModel = rememberViewModel {
-                WeatherViewModelFactory(latitude, longitude).create(WeatherViewModel::class.java)
-            }
-
             LaunchedEffect(city) {
                 cityViewModel.cityUiState = CityUiState.Success(city)
                 cityViewModel.getCity(city)
             }
 
-            LaunchedEffect(latitude, longitude) {
+            LaunchedEffect(latitude, longitude, weatherUnit) {
                 weatherViewModel.weatherUiState = WeatherUiState.Success("Loading...")
-                weatherViewModel.getWeatherCity(latitude, longitude)
+                weatherViewModel.getWeatherCity(latitude, longitude, weatherUnit)
             }
 
             Column {
@@ -166,6 +205,10 @@ fun WeatherApp(modifier: Modifier = Modifier) {
 
                                 val weather = dao.getWeather(city).firstOrNull()
                                 if (weather == null) {
+                                    if (favorites.size >= 10) {
+                                        Toast.makeText(context, "You can't add more than 10 cities", Toast.LENGTH_SHORT).show()
+                                        return@LaunchedEffect
+                                    }
                                     dao.insertWeather(weatherModel)
                                 } else {
                                     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
@@ -178,14 +221,15 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                                     }
 
                                     dao.updateWeather(
-                                        weatherModel.city,
                                         weatherModel.currentTime,
                                         weatherModel.temperature,
                                         weatherModel.weatherCode,
                                         weatherModel.windSpeed,
                                         weatherModel.windDirection,
                                         weatherModel.hourlyTime,
-                                        weatherModel.temperature_2m
+                                        weatherModel.temperature_2m,
+                                        weatherModel.temperatureUnit,
+                                        weatherModel.city
                                     )
                                 }
                             }

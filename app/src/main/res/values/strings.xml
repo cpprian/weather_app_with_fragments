@@ -7,4 +7,6 @@
     <string name="not_favorite">Not favorite</string>
     <string name="search">Search</string>
     <string name="menu">Menu</string>
+    <string name="sync">Refresh data</string>
+    <string name="swap_temperature_units">Swap temperature units</string>
 </resources>

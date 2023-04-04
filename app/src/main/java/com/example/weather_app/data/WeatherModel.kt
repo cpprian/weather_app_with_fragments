@@ -1,11 +1,8 @@
 package com.example.weather_app.data
 
 import androidx.room.*
-import com.example.weather_app.util.DoubleListConverter
-import com.example.weather_app.util.StringListConverter
 
 @Entity(tableName = "weather_table")
-@TypeConverters(StringListConverter::class, DoubleListConverter::class)
 data class WeatherModel(
     @PrimaryKey
     val city: String,
@@ -14,9 +11,10 @@ data class WeatherModel(
     val longitude: Double,
     val currentTime: String,
     val temperature: Double,
+    val temperatureUnit: String,
     val weatherCode: Int,
     val windSpeed: Double,
     val windDirection: Double,
-    val hourlyTime: List<String>,
-    val temperature_2m: List<Double>
+    val hourlyTime: String,
+    val temperature_2m: String
 )

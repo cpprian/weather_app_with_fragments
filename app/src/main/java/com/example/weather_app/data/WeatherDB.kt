@@ -3,7 +3,7 @@ package com.example.weather_app.data
 import android.content.Context
 import androidx.room.*
 
-@Database(entities = [WeatherModel::class], version = 1, exportSchema = false)
+@Database(entities = [WeatherModel::class], version = 2, exportSchema = false)
 abstract class WeatherDB: RoomDatabase() {
     abstract fun weatherDao(): WeatherDao
 
@@ -16,7 +16,7 @@ abstract class WeatherDB: RoomDatabase() {
                 Room.databaseBuilder(
                     context,
                     WeatherDB::class.java,
-                    "weather_database"
+                    "weather"
                 ).build().also {
                     INSTANCE = it
                 }

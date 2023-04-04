@@ -18,21 +18,23 @@ sealed interface WeatherUiState {
 
 class WeatherViewModel(
     lat: Double,
-    long: Double
+    long: Double,
+    unit: String
 ): ViewModel() {
     var weatherUiState: WeatherUiState by mutableStateOf(WeatherUiState.Loading)
 
     init {
-        getWeatherCity(lat, long)
+        getWeatherCity(lat, long, unit)
     }
 
     fun getWeatherCity(
         lat: Double,
-        long: Double
+        long: Double,
+        unit: String
     ) {
         viewModelScope.launch {
             weatherUiState = try {
-                val result = WeatherApi.retrofitService.getWeatherCity(lat, long)
+                val result = WeatherApi.retrofitService.getWeatherCity(lat, long, unit)
                 WeatherUiState.Success(result)
             } catch(e: IOException) {
                 WeatherUiState.Error("IO error: ${e.message}")
@@ -43,11 +45,11 @@ class WeatherViewModel(
     }
 }
 
-class WeatherViewModelFactory(private val lat: Double, private val long: Double): ViewModelProvider.Factory {
+class WeatherViewModelFactory(private val lat: Double, private val long: Double, private val unit: String): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(WeatherViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return WeatherViewModel(lat, long) as T
+            return WeatherViewModel(lat, long, unit) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

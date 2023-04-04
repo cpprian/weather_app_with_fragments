@@ -22,6 +22,7 @@ interface WeatherApiService {
     @GET("v1/forecast?current_weather=true&hourly=temperature_2m,relativehumidity_2m,windspeed_10m")
     suspend fun getWeatherCity(
         @Query("latitude") lat: Double,
-        @Query("longitude") long: Double
+        @Query("longitude") long: Double,
+        @Query("temperature_unit") unit: String
     ): String
 }
