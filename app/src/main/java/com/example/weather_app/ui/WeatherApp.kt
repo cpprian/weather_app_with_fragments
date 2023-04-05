@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.example.weather_app.R
 import com.example.weather_app.data.WeatherDB
+import com.example.weather_app.data.WeatherModel
 import com.example.weather_app.ui.fragments.WeatherFragment
 import com.example.weather_app.ui.screens.*
 import com.example.weather_app.util.extractWeatherData
@@ -283,15 +284,29 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                     }
                 }
 
+                var weatherModel by remember { mutableStateOf(
+                    WeatherModel(
+                        currentTime = "",
+                        temperature = 0.0,
+                        weatherCode = 0,
+                        windSpeed = 0.0,
+                        windDirection = 0.0,
+                        hourlyTime = "",
+                        temperature_2m = "",
+                        temperatureUnit = "",
+                        city = "",
+                        timezone = "",
+                        latitude = 0.0,
+                        longitude = 0.0
+                    )) }
+
                 when (val weatherUiState = weatherViewModel.weatherUiState) {
                     is WeatherUiState.Loading -> { null }
                     is WeatherUiState.Error -> { null }
-                    is WeatherUiState.Success -> { extractWeatherData(city, weatherUiState.weather) }
-                }?.let { it1 ->
-                    WeatherFragment(city = city, weatherDB = dao,
-                        currentWeatherModel = it1
-                    )
+                    is WeatherUiState.Success -> { weatherModel = extractWeatherData(city, weatherUiState.weather) }
                 }
+
+                WeatherFragment(city = city, weatherDB = dao, currentWeatherModel = weatherModel)
             }
         }
     }
