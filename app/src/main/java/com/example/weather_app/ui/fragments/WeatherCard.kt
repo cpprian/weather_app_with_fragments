@@ -2,6 +2,7 @@ package com.example.weather_app.ui.fragments
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -26,16 +27,54 @@ fun WeatherCard(
         Icon(
             painter = painterResource(id = icon),
             contentDescription = label,
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(100.dp)
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(15.dp))
         Text(
             text = temperature,
-            fontSize = 18.sp)
+            fontSize = 24.sp)
         Text(
             text = label,
-            fontSize = 14.sp,
+            fontSize = 20.sp,
             color = Color.Gray
         )
+    }
+}
+
+@Composable
+fun WeatherCardLandscape(
+    icon: Int,
+    temperature: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = label,
+                modifier = Modifier.size(50.dp)
+            )
+            Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
+            Text(
+                text = temperature,
+                fontSize = 24.sp)
+            Text(
+                text = label,
+                fontSize = 20.sp,
+                color = Color.Gray
+            )
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+        }
     }
 }

@@ -8,11 +8,13 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import com.example.weather_app.R
 import com.example.weather_app.data.WeatherDB
@@ -38,12 +40,12 @@ fun WeatherApp(modifier: Modifier = Modifier) {
 
     val favorites by dao.getAllWeather().collectAsState(initial = emptyList())
 
-    var city by remember { mutableStateOf("") }
+    var city by rememberSaveable { mutableStateOf("") }
     var latitude by remember { mutableStateOf(0.0) }
     var longitude by remember { mutableStateOf(0.0) }
     var errorApi by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
-    var weatherUnit by remember { mutableStateOf("") }
+    var weatherUnit by remember { mutableStateOf("celsius") }
 
     val cityViewModel: CityViewModel = rememberViewModel {
         CityViewModelFactory(city).create(CityViewModel::class.java)
@@ -246,21 +248,34 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                     }
                 }
 
-                IconButton(onClick = {
-                    if (errorApi) return@IconButton
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = {
+                        if (errorApi) return@IconButton
 
-                    setFavorite(!isFavorite)
+                        setFavorite(!isFavorite)
 
-                    Toast.makeText(
-                        context,
-                        if (isFavorite) "Removed from favorites" else "Added to favorites",
-                        Toast.LENGTH_SHORT).show()
-                } ) {
-                    Icon(
-                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                        contentDescription = if (isFavorite) stringResource(id = R.string.favorite)
-                        else stringResource(id = R.string.not_favorite),
-                        modifier = Modifier.padding(16.dp)
+                        Toast.makeText(
+                            context,
+                            if (isFavorite) "Removed from favorites" else "Added to favorites",
+                            Toast.LENGTH_SHORT).show()
+                    } ) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                            contentDescription = if (isFavorite) stringResource(id = R.string.favorite)
+                            else stringResource(id = R.string.not_favorite),
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                    Text(
+                        text = city,
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(20.dp)
                     )
                 }
 
@@ -301,8 +316,12 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                     )) }
 
                 when (val weatherUiState = weatherViewModel.weatherUiState) {
-                    is WeatherUiState.Loading -> { null }
-                    is WeatherUiState.Error -> { null }
+                    is WeatherUiState.Loading -> {
+                        Text(text = "Loading...", modifier = Modifier.padding(20.dp))
+                    }
+                    is WeatherUiState.Error -> {
+                        Text(text = "Error: " + weatherUiState.error, modifier = Modifier.padding(20.dp))
+                    }
                     is WeatherUiState.Success -> { weatherModel = extractWeatherData(city, weatherUiState.weather) }
                 }
 
