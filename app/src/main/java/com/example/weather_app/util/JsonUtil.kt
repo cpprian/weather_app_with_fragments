@@ -5,14 +5,21 @@ import android.widget.Toast
 import com.example.weather_app.data.WeatherModel
 import org.json.JSONObject
 
-fun returnLatLong(data: String): Pair<String, String> {
+data class CityInfo(val latitude: String, val longitude: String, val timezone: String) {
+    override fun toString(): String {
+        return "CityInfo(latitude='$latitude', longitude='$longitude', timeZone='$timezone')"
+    }
+}
+
+fun returnCityInfo(data: String): CityInfo {
     return try {
         val jsonObject = JSONObject(data)
         val latitude = jsonObject.getJSONArray("results").getJSONObject(0).getString("latitude")
         val longitude = jsonObject.getJSONArray("results").getJSONObject(0).getString("longitude")
-        Pair(latitude, longitude)
+        val timezone = jsonObject.getJSONArray("results").getJSONObject(0).getString("timezone")
+        CityInfo(latitude, longitude, timezone)
     } catch (e: Exception) {
-        Pair("0", "0")
+        CityInfo("0", "0", "0")
     }
 }
 
@@ -28,11 +35,13 @@ fun extractWeatherData(city: String, data: String): WeatherModel {
         val weatherCode = jsonObject.getJSONObject("current_weather").getInt("weathercode")
         val windSpeed = jsonObject.getJSONObject("current_weather").getDouble("windspeed")
         val windDirection = jsonObject.getJSONObject("current_weather").getDouble("winddirection")
-        val hourlyTime = mutableListOf<String>()
-        val temperature_2m = mutableListOf<Double>()
-        for (i in 0..23) {
-            hourlyTime.add(jsonObject.getJSONObject("hourly").getJSONArray("time").getString(i))
-            temperature_2m.add(jsonObject.getJSONObject("hourly").getJSONArray("temperature_2m").getDouble(i))
+        val dailyTime = mutableListOf<String>()
+        val dailyTemperature2mMax = mutableListOf<Double>()
+        val dailyWeatherCode = mutableListOf<Int>()
+        for (i in 0..6) {
+            dailyTime.add(jsonObject.getJSONObject("hourly").getJSONArray("time").getString(i))
+            dailyWeatherCode.add(jsonObject.getJSONObject("hourly").getJSONArray("weathercode").getInt(i))
+            dailyTemperature2mMax.add(jsonObject.getJSONObject("hourly").getJSONArray("temperature_2m").getDouble(i))
         }
         WeatherModel(
             city = city,
@@ -45,8 +54,9 @@ fun extractWeatherData(city: String, data: String): WeatherModel {
             weatherCode = weatherCode,
             windSpeed = windSpeed,
             windDirection = windDirection,
-            hourlyTime = fromListToString(hourlyTime),
-            temperature_2m = fromListDoubleToString(temperature_2m)
+            dailyTime = fromListToString(dailyTime),
+            dailyWeatherCode = fromListIntToString(dailyWeatherCode),
+            dailyTemperature2mMax = fromListDoubleToString(dailyTemperature2mMax)
         )
     } catch (e: Exception) {
         Log.d("extractWeatherData", data + "\n" +  e.toString())
@@ -61,8 +71,9 @@ fun extractWeatherData(city: String, data: String): WeatherModel {
             weatherCode = 0,
             windSpeed = 0.0,
             windDirection = 0.0,
-            hourlyTime = "0",
-            temperature_2m = "0"
+            dailyTime = "0",
+            dailyWeatherCode = "0",
+            dailyTemperature2mMax = "0"
         )
     }
 }

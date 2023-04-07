@@ -22,9 +22,8 @@ import com.example.weather_app.data.WeatherModel
 import com.example.weather_app.ui.fragments.WeatherFragment
 import com.example.weather_app.ui.screens.*
 import com.example.weather_app.util.extractWeatherData
-import com.example.weather_app.util.returnLatLong
+import com.example.weather_app.util.returnCityInfo
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -41,18 +40,125 @@ fun WeatherApp(modifier: Modifier = Modifier) {
     val favorites by dao.getAllWeather().collectAsState(initial = emptyList())
 
     var city by rememberSaveable { mutableStateOf("") }
+    var timezone by remember { mutableStateOf("") }
     var latitude by remember { mutableStateOf(0.0) }
     var longitude by remember { mutableStateOf(0.0) }
     var errorApi by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
     var weatherUnit by remember { mutableStateOf("celsius") }
 
+    var weatherModel by remember { mutableStateOf(
+        WeatherModel(
+            currentTime = "",
+            temperature = 0.0,
+            weatherCode = 0,
+            windSpeed = 0.0,
+            windDirection = 0.0,
+            dailyTime = "",
+            dailyWeatherCode = "",
+            dailyTemperature2mMax = "",
+            temperatureUnit = "",
+            city = "",
+            timezone = "",
+            latitude = 0.0,
+            longitude = 0.0
+    )) }
+
     val cityViewModel: CityViewModel = rememberViewModel {
         CityViewModelFactory(city).create(CityViewModel::class.java)
     }
 
     val weatherViewModel: WeatherViewModel = rememberViewModel {
-        WeatherViewModelFactory(latitude, longitude, weatherUnit).create(WeatherViewModel::class.java)
+        WeatherViewModelFactory(latitude, longitude, timezone, weatherUnit).create(WeatherViewModel::class.java)
+    }
+
+    LaunchedEffect(city) {
+        cityViewModel.cityUiState = CityUiState.Success(city)
+        cityViewModel.getCity(city)
+    }
+
+    LaunchedEffect(latitude, longitude, weatherUnit) {
+        weatherViewModel.weatherUiState = WeatherUiState.Success("")
+        weatherViewModel.getWeatherCity(latitude, longitude, timezone, weatherUnit)
+    }
+
+    LaunchedEffect(city) {
+        if (errorApi) return@LaunchedEffect
+
+        setFavorite(false)
+        for (favorite in favorites) {
+            if (favorite.city == city) {
+                setFavorite(true)
+                dao.updateWeather(
+                    favorite.currentTime,
+                    favorite.temperature,
+                    favorite.weatherCode,
+                    favorite.windSpeed,
+                    favorite.windDirection,
+                    favorite.dailyTime,
+                    favorite.dailyWeatherCode,
+                    favorite.dailyTemperature2mMax,
+                    favorite.temperatureUnit,
+                    favorite.city
+                )
+                Toast.makeText(context, "This city is already in your favorites", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    LaunchedEffect(isFavorite) {
+        if (errorApi) return@LaunchedEffect
+
+        if (isFavorite) {
+            when(val h = weatherViewModel.weatherUiState) {
+                is WeatherUiState.Loading -> {
+                    errorApi = false
+                }
+                is WeatherUiState.Error -> {
+                    errorApi = true
+                }
+                is WeatherUiState.Success -> {
+                    errorApi = false
+                    val weatherModelExtractor = extractWeatherData(city, h.weather)
+                    if (weatherModelExtractor.city != city) {
+                        return@LaunchedEffect
+                    }
+
+                    val weather = dao.getWeather(city).firstOrNull()
+                    if (weather == null) {
+                        if (favorites.size >= 5) {
+                            Toast.makeText(context, "You can only add 5 favorites", Toast.LENGTH_SHORT).show()
+                            return@LaunchedEffect
+                        }
+                        dao.insertWeather(weatherModelExtractor)
+                    } else {
+                        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
+                        val currentTime = LocalDateTime.parse(weatherModelExtractor.currentTime, formatter)
+                        val lastUpdateTime = LocalDateTime.parse(weather.currentTime, formatter)
+
+                        val diffInMinutes = ChronoUnit.MINUTES.between(lastUpdateTime, currentTime)
+                        if (diffInMinutes < 5) {
+                            return@LaunchedEffect
+                        }
+
+                        dao.updateWeather(
+                            weatherModelExtractor.currentTime,
+                            weatherModelExtractor.temperature,
+                            weatherModelExtractor.weatherCode,
+                            weatherModelExtractor.windSpeed,
+                            weatherModelExtractor.windDirection,
+                            weatherModelExtractor.dailyTime,
+                            weatherModelExtractor.dailyWeatherCode,
+                            weatherModelExtractor.dailyTemperature2mMax,
+                            weatherModelExtractor.temperatureUnit,
+                            weatherModelExtractor.city
+                        )
+                    }
+                }
+            }
+        } else {
+            dao.deleteWeather(city)
+        }
     }
 
     DropdownMenu(
@@ -81,23 +187,15 @@ fun WeatherApp(modifier: Modifier = Modifier) {
 
         LaunchedEffect(weatherUnit) {
             if (weatherUnit == "celsius") {
-                launch {
-                    favorites.forEach { option ->
-                        dao.updateWeatherUnitsCelsius(weatherUnit, option.city)
-                    }
-                }
+                dao.updateWeatherUnitsCelsius(weatherUnit)
             } else if (weatherUnit == "fahrenheit") {
-                launch {
-                    favorites.forEach { option ->
-                        dao.updateWeatherUnitsFahrenheit(weatherUnit, option.city)
-                    }
-                }
+                dao.updateWeatherUnitsFahrenheit(weatherUnit)
             }
         }
 
         IconButton(onClick = {
             expanded = false
-            weatherUnit = if (weatherUnit == "celsius" || weatherUnit.isEmpty()) "celsius" else "fahrenheit"
+            weatherUnit = if (weatherUnit == "celsius") "fahrenheit" else "celsius"
         }) {
             Row {
                 Icon(
@@ -172,82 +270,7 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                 .padding(it),
             color = MaterialTheme.colors.background
         ) {
-            LaunchedEffect(city) {
-                cityViewModel.cityUiState = CityUiState.Success(city)
-                cityViewModel.getCity(city)
-            }
-
-            LaunchedEffect(latitude, longitude, weatherUnit) {
-                weatherViewModel.weatherUiState = WeatherUiState.Success("")
-                weatherViewModel.getWeatherCity(latitude, longitude, weatherUnit)
-            }
-
             Column {
-                LaunchedEffect(city) {
-                    if (errorApi) return@LaunchedEffect
-
-                    setFavorite(false)
-                    for (favorite in favorites) {
-                        if (favorite.city == city) {
-                            setFavorite(true)
-                        }
-                    }
-                }
-
-                LaunchedEffect(isFavorite) {
-                    if (errorApi) return@LaunchedEffect
-
-                    if (isFavorite) {
-                        when(val h = weatherViewModel.weatherUiState) {
-                            is WeatherUiState.Loading -> {
-                                errorApi = false
-                            }
-                            is WeatherUiState.Error -> {
-                                errorApi = true
-                            }
-                            is WeatherUiState.Success -> {
-                                errorApi = false
-                                val weatherModel = extractWeatherData(city, h.weather)
-                                if (weatherModel.city != city) {
-                                    return@LaunchedEffect
-                                }
-
-                                val weather = dao.getWeather(city).firstOrNull()
-                                if (weather == null) {
-                                    if (favorites.size >= 5) {
-                                        Toast.makeText(context, "You can only add 5 favorites", Toast.LENGTH_SHORT).show()
-                                        return@LaunchedEffect
-                                    }
-                                    dao.insertWeather(weatherModel)
-                                } else {
-                                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
-                                    val currentTime = LocalDateTime.parse(weatherModel.currentTime, formatter)
-                                    val lastUpdateTime = LocalDateTime.parse(weather.currentTime, formatter)
-
-                                    val diffInMinutes = ChronoUnit.MINUTES.between(lastUpdateTime, currentTime)
-                                    if (diffInMinutes < 5) {
-                                        return@LaunchedEffect
-                                    }
-
-                                    dao.updateWeather(
-                                        weatherModel.currentTime,
-                                        weatherModel.temperature,
-                                        weatherModel.weatherCode,
-                                        weatherModel.windSpeed,
-                                        weatherModel.windDirection,
-                                        weatherModel.hourlyTime,
-                                        weatherModel.temperature_2m,
-                                        weatherModel.temperatureUnit,
-                                        weatherModel.city
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        dao.deleteWeather(city)
-                    }
-                }
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -293,27 +316,12 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                     }
                     is CityUiState.Success -> {
                         errorApi = false
-                        val result = returnLatLong(cityUiState.city)
-                        latitude = result.first.toDouble()
-                        longitude = result.second.toDouble()
+                        val result = returnCityInfo(cityUiState.city)
+                        latitude = result.latitude.toDouble()
+                        longitude = result.longitude.toDouble()
+                        timezone = result.timezone
                     }
                 }
-
-                var weatherModel by remember { mutableStateOf(
-                    WeatherModel(
-                        currentTime = "",
-                        temperature = 0.0,
-                        weatherCode = 0,
-                        windSpeed = 0.0,
-                        windDirection = 0.0,
-                        hourlyTime = "",
-                        temperature_2m = "",
-                        temperatureUnit = "",
-                        city = "",
-                        timezone = "",
-                        latitude = 0.0,
-                        longitude = 0.0
-                    )) }
 
                 when (val weatherUiState = weatherViewModel.weatherUiState) {
                     is WeatherUiState.Loading -> {

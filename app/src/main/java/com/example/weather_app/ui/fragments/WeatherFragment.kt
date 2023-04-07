@@ -91,7 +91,7 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
                     modifier = Modifier.padding(16.dp)
                 )
 
-                ForecastList(forecasts = fromStringToListDouble(currentWeather.temperature_2m))
+                ForecastList(forecasts = fromStringToListDouble(currentWeather.dailyTemperature2mMax))
             }
         }
     }

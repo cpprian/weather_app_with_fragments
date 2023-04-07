@@ -14,8 +14,9 @@ interface WeatherDao {
             "weatherCode = :newWeatherCode, " +
             "windSpeed = :newWindSpeed, " +
             "windDirection = :newWindDirection, " +
-            "hourlyTime = :newHourlyTime, " +
-            "temperature_2m = :newTemperature_2m, " +
+            "dailyTime = :newDailyTime, " +
+            "dailyWeatherCode = :newDailyWeatherCode, " +
+            "dailyTemperature2mMax = :newDailyTemperature2mMax, " +
             "temperatureUnit = :newTemperatureUnit " +
             "WHERE city = :city")
     suspend fun updateWeather(
@@ -24,8 +25,9 @@ interface WeatherDao {
         newWeatherCode: Int,
         newWindSpeed: Double,
         newWindDirection: Double,
-        newHourlyTime: String,
-        newTemperature_2m: String,
+        newDailyTime: String,
+        newDailyWeatherCode: String,
+        newDailyTemperature2mMax: String,
         newTemperatureUnit: String,
         city: String
     )
@@ -39,9 +41,9 @@ interface WeatherDao {
     @Query("SELECT * FROM weather_table ORDER BY city ASC")
     fun getAllWeather(): Flow<List<WeatherModel>>
 
-    @Query("UPDATE weather_table SET temperatureUnit = :unit, temperature = (temperature - 32) * 5 / 9 WHERE temperatureUnit = 'fahrenheit' AND city = :city")
-    fun updateWeatherUnitsCelsius(unit: String = "celsius", city: String)
+    @Query("UPDATE weather_table SET temperatureUnit = :unit, temperature = (temperature - 32) * 5 / 9 WHERE temperatureUnit = 'celsius'")
+    fun updateWeatherUnitsCelsius(unit: String = "fahrenheit")
 
-    @Query("UPDATE weather_table SET temperatureUnit = :unit, temperature = temperature * 9 / 5 + 32 WHERE temperatureUnit = 'celsius' AND city = :city")
-    fun updateWeatherUnitsFahrenheit(unit: String = "fahrenheit", city: String)
+    @Query("UPDATE weather_table SET temperatureUnit = :unit, temperature = temperature * 9 / 5 + 32 WHERE temperatureUnit = 'fahrenheit'")
+    fun updateWeatherUnitsFahrenheit(unit: String = "celsius")
 }

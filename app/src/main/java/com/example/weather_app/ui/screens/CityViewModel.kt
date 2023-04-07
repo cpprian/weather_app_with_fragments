@@ -17,7 +17,7 @@ sealed interface CityUiState {
 }
 
 class CityViewModel(
-    city: String
+    city: String,
 ): ViewModel() {
     var cityUiState: CityUiState by mutableStateOf(CityUiState.Loading)
 

@@ -15,6 +15,7 @@ data class WeatherModel(
     val weatherCode: Int,
     val windSpeed: Double,
     val windDirection: Double,
-    val hourlyTime: String,
-    val temperature_2m: String
+    val dailyTime: String,
+    val dailyWeatherCode: String,
+    val dailyTemperature2mMax: String
 )

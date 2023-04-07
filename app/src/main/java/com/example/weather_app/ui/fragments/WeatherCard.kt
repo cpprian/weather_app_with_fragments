@@ -1,6 +1,5 @@
 package com.example.weather_app.ui.fragments
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -27,15 +26,15 @@ fun WeatherCard(
         Icon(
             painter = painterResource(id = icon),
             contentDescription = label,
-            modifier = Modifier.size(100.dp)
+            modifier = Modifier.size(150.dp)
         )
         Spacer(modifier = Modifier.height(15.dp))
         Text(
             text = temperature,
-            fontSize = 24.sp)
+            fontSize = 30.sp)
         Text(
             text = label,
-            fontSize = 20.sp,
+            fontSize = 28.sp,
             color = Color.Gray
         )
     }
