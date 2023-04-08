@@ -2,12 +2,12 @@ package com.example.weather_app.ui.fragments
 
 import android.content.res.Configuration
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,7 +30,6 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
     }
     val isPortrait = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
     val currentWeather: WeatherModel = weatherDB.getWeather(city).collectAsState(initial = null).value ?: currentWeatherModel
-    val weatherUnit = if (currentWeather.temperatureUnit == "celsius") "°C" else "F"
 
     if (isPortrait) {
         Column(
@@ -45,7 +44,7 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
                     icon = weatherType.iconRes,
                     temperature = currentWeather.temperature.toString(),
                     label = weatherType.weatherDesc,
-                    weatherUnit = weatherUnit,
+                    weatherUnit = currentWeather.temperatureUnit,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -92,7 +91,7 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
                     time = fromStringToList(currentWeather.dailyTime),
                     forecasts = fromStringToListDouble(currentWeather.dailyTemperature2mMax),
                     weathercodes = fromStringToListInt(currentWeather.dailyWeatherCode),
-                    weatherUnit = weatherUnit)
+                    weatherUnit = currentWeather.temperatureUnit)
             }
         }
     }

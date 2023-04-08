@@ -44,6 +44,8 @@ fun WeatherApp(modifier: Modifier = Modifier) {
 
     val favorites by dao.getAllWeather().collectAsState(initial = emptyList())
 
+    dao.updateWeatherUnitsFahrenheit()
+
     var city by rememberSaveable { mutableStateOf("") }
     var latitude by remember { mutableStateOf(0.0) }
     var longitude by remember { mutableStateOf(0.0) }

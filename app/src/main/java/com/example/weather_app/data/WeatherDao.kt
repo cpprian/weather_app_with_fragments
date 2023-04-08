@@ -41,9 +41,9 @@ interface WeatherDao {
     @Query("SELECT * FROM weather_table ORDER BY city ASC")
     fun getAllWeather(): Flow<List<WeatherModel>>
 
-    @Query("UPDATE weather_table SET temperatureUnit = :unit, temperature = (temperature - 32) * 5 / 9 WHERE temperatureUnit = 'celsius'")
-    fun updateWeatherUnitsCelsius(unit: String = "fahrenheit")
+    @Query("UPDATE weather_table SET temperatureUnit = :unit, temperature = (temperature - 32) * 5 / 9 WHERE temperatureUnit = '°C'")
+    fun updateWeatherUnitsCelsius(unit: String = "°F")
 
-    @Query("UPDATE weather_table SET temperatureUnit = :unit, temperature = temperature * 9 / 5 + 32 WHERE temperatureUnit = 'fahrenheit'")
-    fun updateWeatherUnitsFahrenheit(unit: String = "celsius")
+    @Query("UPDATE weather_table SET temperatureUnit = :unit, temperature = temperature * 9 / 5 + 32 WHERE temperatureUnit = '°F'")
+    fun updateWeatherUnitsFahrenheit(unit: String = "°C")
 }
