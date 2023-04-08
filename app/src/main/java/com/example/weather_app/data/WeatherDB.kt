@@ -16,7 +16,7 @@ abstract class WeatherDB: RoomDatabase() {
                 Room.databaseBuilder(
                     context,
                     WeatherDB::class.java,
-                    "weather"
+                    "weatherDB"
                 ).allowMainThreadQueries().build().also {
                     INSTANCE = it
                 }

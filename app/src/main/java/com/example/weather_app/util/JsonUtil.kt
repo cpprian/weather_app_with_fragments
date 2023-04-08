@@ -31,7 +31,7 @@ fun extractWeatherData(city: String, data: String): WeatherModel {
         val longitude = jsonObject.getDouble("longitude")
         val currentTime = jsonObject.getJSONObject("current_weather").getString("time")
         val temperature = jsonObject.getJSONObject("current_weather").getDouble("temperature")
-        val temperatureUnit = jsonObject.getJSONObject("hourly_units").getString("temperature_2m")
+        val temperatureUnit = jsonObject.getJSONObject("daily_units").getString("temperature_2m_max")
         val weatherCode = jsonObject.getJSONObject("current_weather").getInt("weathercode")
         val windSpeed = jsonObject.getJSONObject("current_weather").getDouble("windspeed")
         val windDirection = jsonObject.getJSONObject("current_weather").getDouble("winddirection")
@@ -39,9 +39,9 @@ fun extractWeatherData(city: String, data: String): WeatherModel {
         val dailyTemperature2mMax = mutableListOf<Double>()
         val dailyWeatherCode = mutableListOf<Int>()
         for (i in 0..6) {
-            dailyTime.add(jsonObject.getJSONObject("hourly").getJSONArray("time").getString(i))
-            dailyWeatherCode.add(jsonObject.getJSONObject("hourly").getJSONArray("weathercode").getInt(i))
-            dailyTemperature2mMax.add(jsonObject.getJSONObject("hourly").getJSONArray("temperature_2m").getDouble(i))
+            dailyTime.add(jsonObject.getJSONObject("daily").getJSONArray("time").getString(i))
+            dailyWeatherCode.add(jsonObject.getJSONObject("daily").getJSONArray("weathercode").getInt(i))
+            dailyTemperature2mMax.add(jsonObject.getJSONObject("daily").getJSONArray("temperature_2m_max").getDouble(i))
         }
         WeatherModel(
             city = city,

@@ -1,6 +1,8 @@
 package com.example.weather_app.ui.fragments
 
 import android.content.res.Configuration
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
@@ -17,8 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weather_app.data.WeatherDao
 import com.example.weather_app.data.WeatherModel
+import com.example.weather_app.util.fromStringToList
 import com.example.weather_app.util.fromStringToListDouble
+import com.example.weather_app.util.fromStringToListInt
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: WeatherModel) {
     if (city.isEmpty()) {
@@ -70,8 +75,7 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
                 modifier = Modifier.fillMaxWidth(0.5f),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
-            )
-            {
+            ) {
                 val weatherType = WeatherType.fromWMO(currentWeather.weatherCode)
                 WeatherCardLandscape(
                     icon = weatherType.iconRes,
@@ -84,14 +88,10 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Today's Forecast",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp)
-                )
-
-                ForecastList(forecasts = fromStringToListDouble(currentWeather.dailyTemperature2mMax))
+                ForecastList(
+                    time = fromStringToList(currentWeather.dailyTime),
+                    forecasts = fromStringToListDouble(currentWeather.dailyTemperature2mMax),
+                    weathercodes = fromStringToListInt(currentWeather.dailyWeatherCode))
             }
         }
     }

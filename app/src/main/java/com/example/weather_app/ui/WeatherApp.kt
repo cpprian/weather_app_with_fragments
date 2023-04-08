@@ -22,10 +22,9 @@ import com.example.weather_app.data.WeatherModel
 import com.example.weather_app.ui.fragments.WeatherFragment
 import com.example.weather_app.ui.screens.*
 import com.example.weather_app.util.extractWeatherData
+import com.example.weather_app.util.parseTime
 import com.example.weather_app.util.returnCityInfo
 import kotlinx.coroutines.flow.firstOrNull
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -77,7 +76,7 @@ fun WeatherApp(modifier: Modifier = Modifier) {
         cityViewModel.getCity(city)
     }
 
-    LaunchedEffect(latitude, longitude, weatherUnit) {
+    LaunchedEffect(latitude, longitude, timezone, weatherUnit) {
         weatherViewModel.weatherUiState = WeatherUiState.Success("")
         weatherViewModel.getWeatherCity(latitude, longitude, timezone, weatherUnit)
     }
@@ -132,9 +131,8 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                         }
                         dao.insertWeather(weatherModelExtractor)
                     } else {
-                        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
-                        val currentTime = LocalDateTime.parse(weatherModelExtractor.currentTime, formatter)
-                        val lastUpdateTime = LocalDateTime.parse(weather.currentTime, formatter)
+                        val currentTime = parseTime(weatherModelExtractor.currentTime)
+                        val lastUpdateTime = parseTime(weather.currentTime)
 
                         val diffInMinutes = ChronoUnit.MINUTES.between(lastUpdateTime, currentTime)
                         if (diffInMinutes < 5) {
@@ -161,6 +159,14 @@ fun WeatherApp(modifier: Modifier = Modifier) {
         }
     }
 
+    LaunchedEffect(weatherUnit) {
+        if (weatherUnit == "celsius") {
+            dao.updateWeatherUnitsCelsius(weatherUnit)
+        } else if (weatherUnit == "fahrenheit") {
+            dao.updateWeatherUnitsFahrenheit(weatherUnit)
+        }
+    }
+
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { expanded = false },
@@ -182,14 +188,6 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                     contentDescription = stringResource(id = R.string.sync)
                 )
                 Text(text = stringResource(id = R.string.sync))
-            }
-        }
-
-        LaunchedEffect(weatherUnit) {
-            if (weatherUnit == "celsius") {
-                dao.updateWeatherUnitsCelsius(weatherUnit)
-            } else if (weatherUnit == "fahrenheit") {
-                dao.updateWeatherUnitsFahrenheit(weatherUnit)
             }
         }
 

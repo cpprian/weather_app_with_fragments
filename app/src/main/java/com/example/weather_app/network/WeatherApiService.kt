@@ -19,11 +19,11 @@ object WeatherApi {
 }
 
 interface WeatherApiService {
-    @GET("v1/forecast?current_weather=true&daily=weathercode,temperature_2m_max")
+    @GET("v1/forecast?current_weather=true&daily=weathercode,temperature_2m_max&timezone=auto")
     suspend fun getWeatherCity(
         @Query("latitude") lat: Double,
         @Query("longitude") long: Double,
-        @Query("timezone") timezone: String,
+//        @Query("timezone") timezone: String,
         @Query("temperature_unit") unit: String
     ): String
 }
