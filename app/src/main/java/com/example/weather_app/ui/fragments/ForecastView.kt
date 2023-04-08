@@ -43,6 +43,7 @@ fun ForecastItem(time: String, forecast: Double, weatherCode: Int, weatherUnit: 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ForecastList(time: List<String>, forecasts: List<Double>, weathercodes: List<Int>, weatherUnit: String) {
+    if (time.isEmpty() || forecasts.isEmpty() || weathercodes.isEmpty()) return
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)

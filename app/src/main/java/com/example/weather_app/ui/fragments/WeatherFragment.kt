@@ -28,10 +28,12 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
         Text(text = "Please enter a city")
         return
     }
-    val isPortrait = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    val isLargeScreen = configuration.screenWidthDp >= 600
     val currentWeather: WeatherModel = weatherDB.getWeather(city).collectAsState(initial = null).value ?: currentWeatherModel
 
-    if (isPortrait) {
+    if (isPortrait && !isLargeScreen) {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -80,6 +82,7 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
                     currentTime = currentWeather.currentTime,
                     windDirection = currentWeather.windDirection.toString(),
                     windSpeed = currentWeather.windSpeed.toString(),
+                    currentWeather.temperatureUnit,
                     modifier = Modifier.weight(1f)
                 )
             }

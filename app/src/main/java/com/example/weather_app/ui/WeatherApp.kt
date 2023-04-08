@@ -1,6 +1,7 @@
 package com.example.weather_app.ui
 
 import android.os.Build
+import android.widget.Space
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
@@ -44,7 +45,9 @@ fun WeatherApp(modifier: Modifier = Modifier) {
 
     val favorites by dao.getAllWeather().collectAsState(initial = emptyList())
 
-    dao.updateWeatherUnitsFahrenheit()
+    if (favorites.isNotEmpty() && favorites[0].temperatureUnit == "°F") {
+        dao.updateWeatherUnitsFahrenheit()
+    }
 
     var city by rememberSaveable { mutableStateOf("") }
     var latitude by remember { mutableStateOf(0.0) }
@@ -168,9 +171,9 @@ fun WeatherApp(modifier: Modifier = Modifier) {
 
     LaunchedEffect(weatherUnit) {
         if (weatherUnit == "celsius") {
-            dao.updateWeatherUnitsCelsius(weatherUnit)
+            dao.updateWeatherUnitsCelsius()
         } else if (weatherUnit == "fahrenheit") {
-            dao.updateWeatherUnitsFahrenheit(weatherUnit)
+            dao.updateWeatherUnitsFahrenheit()
         }
     }
 
@@ -229,12 +232,9 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                     .height(70.dp),
                 title = {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         var inputText by remember { mutableStateOf("") }
-
                         IconButton(
                             onClick = { expanded = true },
                             modifier = Modifier.padding(10.dp)
@@ -244,20 +244,21 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                                 contentDescription = stringResource(id = R.string.menu)
                             )
                         }
-
+                        Spacer(modifier = Modifier.width(75.dp))
                         OutlinedTextField(
                             value = inputText,
                             onValueChange = { inputText = it },
                             label = { Text(text = stringResource(id = R.string.city)) },
-                            modifier = Modifier.fillMaxWidth(0.75f),
+                            modifier = Modifier.fillMaxWidth(0.5f),
                             keyboardActions = KeyboardActions(onDone = {
-                                city = inputText
                                 focusManager.clearFocus()
+
+                                if (errorApi) return@KeyboardActions
+                                city = inputText
                             }),
                             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done, keyboardType = KeyboardType.Text)
                         )
                     }
-
                 }
             )
          },
@@ -316,7 +317,7 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                         errorApi = false
                         val result = returnLatLong(cityUiState.city)
                         latitude = result.first
-                        longitude = result.first
+                        longitude = result.second
                     }
                 }
 
@@ -325,7 +326,10 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                         Text(text = "Loading...", modifier = Modifier.padding(20.dp))
                     }
                     is WeatherUiState.Error -> {
-                        Text(text = "Error: " + weatherUiState.error, modifier = Modifier.padding(20.dp))
+                        Toast.makeText(
+                            context,
+                            "Error: " + weatherUiState.error,
+                            Toast.LENGTH_SHORT).show()
                     }
                     is WeatherUiState.Success -> { weatherModel = extractWeatherData(city, weatherUiState.weather) }
                 }

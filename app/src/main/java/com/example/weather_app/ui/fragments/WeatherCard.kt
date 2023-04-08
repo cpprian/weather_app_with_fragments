@@ -52,6 +52,7 @@ fun WeatherCardLandscape(
     currentTime: String,
     windDirection: String,
     windSpeed: String,
+    weatherUnit: String,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -68,7 +69,7 @@ fun WeatherCardLandscape(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = temperature,
+                text = temperature + weatherUnit,
                 fontSize = 24.sp)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
