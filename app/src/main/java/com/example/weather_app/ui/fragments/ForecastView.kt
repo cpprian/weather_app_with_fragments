@@ -18,16 +18,20 @@ import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ForecastItem(time: String, forecast: Double, weatherCode: Int) {
+fun ForecastItem(time: String, forecast: Double, weatherCode: Int, weatherUnit: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        Icon(
-            painter = painterResource(WeatherType.fromWMO(weatherCode).iconRes),
-            contentDescription = "Weather Icon",
-            modifier = Modifier.size(40.dp)
-        )
+        Column {
+            Icon(
+                painter = painterResource(WeatherType.fromWMO(weatherCode).iconRes),
+                contentDescription = "Weather Icon",
+                modifier = Modifier.size(40.dp))
+            Text(
+                text = forecast.toString() + weatherUnit,
+                modifier = Modifier.padding(8.dp))
+        }
         Text(
             text = parseDate(time).toString(),
             modifier = Modifier.padding(8.dp))
@@ -38,13 +42,17 @@ fun ForecastItem(time: String, forecast: Double, weatherCode: Int) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ForecastList(time: List<String>, forecasts: List<Double>, weathercodes: List<Int>) {
+fun ForecastList(time: List<String>, forecasts: List<Double>, weathercodes: List<Int>, weatherUnit: String) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
     ) {
         items(forecasts.size) { index ->
-            ForecastItem(time = time[index], forecast = forecasts[index], weathercodes[index])
+            ForecastItem(
+                time = time[index],
+                forecast = forecasts[index],
+                weathercodes[index],
+                weatherUnit = weatherUnit)
         }
     }
 }

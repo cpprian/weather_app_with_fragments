@@ -17,6 +17,7 @@ fun WeatherCard(
     icon: Int,
     temperature: String,
     label: String,
+    weatherUnit: String,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -26,15 +27,15 @@ fun WeatherCard(
         Icon(
             painter = painterResource(id = icon),
             contentDescription = label,
-            modifier = Modifier.size(150.dp)
+            modifier = Modifier.size(200.dp)
         )
         Spacer(modifier = Modifier.height(15.dp))
         Text(
-            text = temperature,
-            fontSize = 30.sp)
+            text = temperature + weatherUnit,
+            fontSize = 36.sp)
         Text(
             text = label,
-            fontSize = 28.sp,
+            fontSize = 32.sp,
             color = Color.Gray
         )
     }
@@ -45,35 +46,56 @@ fun WeatherCardLandscape(
     icon: Int,
     temperature: String,
     label: String,
+    timezone: String,
+    latitude: String,
+    longitude: String,
+    currentTime: String,
+    windDirection: String,
+    windSpeed: String,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Column(
         modifier = modifier.padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+
         ) {
             Icon(
                 painter = painterResource(id = icon),
                 contentDescription = label,
                 modifier = Modifier.size(50.dp)
             )
-            Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = temperature,
                 fontSize = 24.sp)
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = label,
                 fontSize = 20.sp,
                 color = Color.Gray
             )
         }
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
+            Text(
+                text = "Timezone: $timezone",
+                fontSize = 16.sp
+            )
+            Text(
+                text = "Latitude: $latitude, Longitude: $longitude",
+                fontSize = 16.sp
+            )
+            Text(
+                text = "Current time: $currentTime",
+                fontSize = 16.sp
+            )
+            Text(
+                text = "Wind speed: $windSpeed, Wind direction: $windDirection",
+                fontSize = 16.sp
+            )
         }
     }
 }

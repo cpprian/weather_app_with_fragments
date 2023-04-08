@@ -1,9 +1,13 @@
 package com.example.weather_app.ui
 
+import android.content.Context
 import android.os.Build
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -11,8 +15,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
@@ -31,6 +38,7 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun WeatherApp(modifier: Modifier = Modifier) {
     val context = androidx.compose.ui.platform.LocalContext.current
+    val focusManager = LocalFocusManager.current
     val (isFavorite, setFavorite) = remember { mutableStateOf(false) }
 
     val database = WeatherDB.getDatabase(context)
@@ -242,20 +250,13 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                             value = inputText,
                             onValueChange = { inputText = it },
                             label = { Text(text = stringResource(id = R.string.city)) },
-                            modifier = Modifier.fillMaxWidth(0.75f)
-                        )
-
-                        IconButton(
-                            onClick = {
+                            modifier = Modifier.fillMaxWidth(0.75f),
+                            keyboardActions = KeyboardActions(onDone = {
                                 city = inputText
-                            },
-                            modifier = Modifier.padding(10.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = stringResource(id = R.string.search)
-                            )
-                        }
+                                focusManager.clearFocus()
+                            }),
+                            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done, keyboardType = KeyboardType.Text)
+                        )
                     }
 
                 }

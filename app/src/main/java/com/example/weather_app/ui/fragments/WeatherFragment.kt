@@ -8,8 +8,6 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +30,7 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
     }
     val isPortrait = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
     val currentWeather: WeatherModel = weatherDB.getWeather(city).collectAsState(initial = null).value ?: currentWeatherModel
+    val weatherUnit = if (currentWeather.temperatureUnit == "celsius") "°C" else "F"
 
     if (isPortrait) {
         Column(
@@ -46,6 +45,7 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
                     icon = weatherType.iconRes,
                     temperature = currentWeather.temperature.toString(),
                     label = weatherType.weatherDesc,
+                    weatherUnit = weatherUnit,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -54,17 +54,12 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
             Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(16.dp))
 
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Today's Forecast",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
+            Text(
+                text = "Time of fetching: ${currentWeather.currentTime}",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(16.dp)
+            )
         }
     } else {
         Row(
@@ -81,6 +76,12 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
                     icon = weatherType.iconRes,
                     temperature = currentWeather.temperature.toString(),
                     label = weatherType.weatherDesc,
+                    timezone = currentWeather.timezone,
+                    latitude = currentWeather.latitude.toString(),
+                    longitude = currentWeather.longitude.toString(),
+                    currentTime = currentWeather.currentTime,
+                    windDirection = currentWeather.windDirection.toString(),
+                    windSpeed = currentWeather.windSpeed.toString(),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -91,7 +92,8 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
                 ForecastList(
                     time = fromStringToList(currentWeather.dailyTime),
                     forecasts = fromStringToListDouble(currentWeather.dailyTemperature2mMax),
-                    weathercodes = fromStringToListInt(currentWeather.dailyWeatherCode))
+                    weathercodes = fromStringToListInt(currentWeather.dailyWeatherCode),
+                    weatherUnit = weatherUnit)
             }
         }
     }
