@@ -19,19 +19,17 @@ sealed interface WeatherUiState {
 class WeatherViewModel(
     lat: Double,
     long: Double,
-    timezone: String,
     unit: String
 ): ViewModel() {
     var weatherUiState: WeatherUiState by mutableStateOf(WeatherUiState.Loading)
 
     init {
-        getWeatherCity(lat, long, timezone, unit)
+        getWeatherCity(lat, long, unit)
     }
 
     fun getWeatherCity(
         lat: Double,
         long: Double,
-        timezone: String,
         unit: String
     ) {
         viewModelScope.launch {
@@ -47,11 +45,11 @@ class WeatherViewModel(
     }
 }
 
-class WeatherViewModelFactory(private val lat: Double, private val long: Double, private val timezone: String, private val unit: String): ViewModelProvider.Factory {
+class WeatherViewModelFactory(private val lat: Double, private val long: Double, private val unit: String): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(WeatherViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return WeatherViewModel(lat, long, timezone, unit) as T
+            return WeatherViewModel(lat, long, unit) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

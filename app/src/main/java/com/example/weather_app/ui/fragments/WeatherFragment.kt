@@ -49,7 +49,6 @@ fun WeatherFragment(city: String, weatherDB: WeatherDao, currentWeatherModel: We
                     modifier = Modifier.weight(1f)
                 )
             }
-
             Spacer(modifier = Modifier.height(16.dp))
             Divider(color = Color.Gray, thickness = 1.dp, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(16.dp))

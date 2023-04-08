@@ -1,8 +1,6 @@
 package com.example.weather_app.ui
 
-import android.content.Context
 import android.os.Build
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
@@ -30,7 +28,7 @@ import com.example.weather_app.ui.fragments.WeatherFragment
 import com.example.weather_app.ui.screens.*
 import com.example.weather_app.util.extractWeatherData
 import com.example.weather_app.util.parseTime
-import com.example.weather_app.util.returnCityInfo
+import com.example.weather_app.util.returnLatLong
 import kotlinx.coroutines.flow.firstOrNull
 import java.time.temporal.ChronoUnit
 
@@ -47,7 +45,6 @@ fun WeatherApp(modifier: Modifier = Modifier) {
     val favorites by dao.getAllWeather().collectAsState(initial = emptyList())
 
     var city by rememberSaveable { mutableStateOf("") }
-    var timezone by remember { mutableStateOf("") }
     var latitude by remember { mutableStateOf(0.0) }
     var longitude by remember { mutableStateOf(0.0) }
     var errorApi by remember { mutableStateOf(false) }
@@ -76,7 +73,7 @@ fun WeatherApp(modifier: Modifier = Modifier) {
     }
 
     val weatherViewModel: WeatherViewModel = rememberViewModel {
-        WeatherViewModelFactory(latitude, longitude, timezone, weatherUnit).create(WeatherViewModel::class.java)
+        WeatherViewModelFactory(latitude, longitude, weatherUnit).create(WeatherViewModel::class.java)
     }
 
     LaunchedEffect(city) {
@@ -84,9 +81,9 @@ fun WeatherApp(modifier: Modifier = Modifier) {
         cityViewModel.getCity(city)
     }
 
-    LaunchedEffect(latitude, longitude, timezone, weatherUnit) {
+    LaunchedEffect(latitude, longitude, weatherUnit) {
         weatherViewModel.weatherUiState = WeatherUiState.Success("")
-        weatherViewModel.getWeatherCity(latitude, longitude, timezone, weatherUnit)
+        weatherViewModel.getWeatherCity(latitude, longitude, weatherUnit)
     }
 
     LaunchedEffect(city) {
@@ -315,10 +312,9 @@ fun WeatherApp(modifier: Modifier = Modifier) {
                     }
                     is CityUiState.Success -> {
                         errorApi = false
-                        val result = returnCityInfo(cityUiState.city)
-                        latitude = result.latitude.toDouble()
-                        longitude = result.longitude.toDouble()
-                        timezone = result.timezone
+                        val result = returnLatLong(cityUiState.city)
+                        latitude = result.first
+                        longitude = result.first
                     }
                 }
 

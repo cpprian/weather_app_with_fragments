@@ -5,21 +5,14 @@ import android.widget.Toast
 import com.example.weather_app.data.WeatherModel
 import org.json.JSONObject
 
-data class CityInfo(val latitude: String, val longitude: String, val timezone: String) {
-    override fun toString(): String {
-        return "CityInfo(latitude='$latitude', longitude='$longitude', timeZone='$timezone')"
-    }
-}
-
-fun returnCityInfo(data: String): CityInfo {
+fun returnLatLong(data: String): Pair<Double, Double> {
     return try {
         val jsonObject = JSONObject(data)
-        val latitude = jsonObject.getJSONArray("results").getJSONObject(0).getString("latitude")
-        val longitude = jsonObject.getJSONArray("results").getJSONObject(0).getString("longitude")
-        val timezone = jsonObject.getJSONArray("results").getJSONObject(0).getString("timezone")
-        CityInfo(latitude, longitude, timezone)
+        val latitude = jsonObject.getJSONArray("results").getJSONObject(0).getString("latitude").toDouble()
+        val longitude = jsonObject.getJSONArray("results").getJSONObject(0).getString("longitude").toDouble()
+        Pair(latitude, longitude)
     } catch (e: Exception) {
-        CityInfo("0", "0", "0")
+        Pair(0.0, 0.0)
     }
 }
 

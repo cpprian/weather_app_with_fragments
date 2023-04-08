@@ -23,7 +23,6 @@ interface WeatherApiService {
     suspend fun getWeatherCity(
         @Query("latitude") lat: Double,
         @Query("longitude") long: Double,
-//        @Query("timezone") timezone: String,
         @Query("temperature_unit") unit: String
     ): String
 }
